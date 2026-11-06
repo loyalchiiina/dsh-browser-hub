@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "settings": {
+    "engine": "baidu",
+    "customEngine": ""
+  },
+  "tree": {
+    "id": "root",
+    "type": "folder",
+    "name": "全部书签",
+    "children": [
+      {
+        "id": "f_common",
+        "type": "folder",
+        "name": "常用",
+        "children": []
+      },
+      {
+        "id": "f_work",
+        "type": "folder",
+        "name": "工作",
+        "children": []
+      }
+    ]
+  }
+}
