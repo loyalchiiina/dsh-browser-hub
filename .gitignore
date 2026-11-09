@@ -3,3 +3,4 @@ data/store.json
 *.log
 *.tmp
 .DS_Store
+.agents/
