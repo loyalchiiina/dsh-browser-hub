@@ -1,0 +1,7 @@
+{
+  "name": "dsh-browser-hub",
+  "meta": {
+    "title": "浏览器中枢",
+    "description": "v0.2.2 · 给 DSH 自带「浏览器」标签页加上搜索引擎切换、多级文件夹书签，以及 360/Chrome 书签 HTML 导入。"
+  }
+}
