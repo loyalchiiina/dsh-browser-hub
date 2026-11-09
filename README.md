@@ -2,6 +2,8 @@
 
 内置「浏览器」Tab 增强 —— the agent harness 桌面端右侧边栏**自带浏览器**的伴随插件。
 
+> **English**: A companion plugin for the built-in **browser** tab in the desktop right sidebar: adds a search-engine dropdown (Baidu / Bing / Google / Sogou / 360 / custom), a bookmark button with a searchable panel, multi-level folders and 360/Chrome bookmark-HTML import, plus keyword-to-search behaviour in the address bar. Adapts DSH kernel 0.2.2-rc.1.
+
 > 只增强**自带的「浏览器」Tab**，**不再单独新增标签页**（独立的「书签」Tab 与左侧边栏入口已移除）。
 
 在自带浏览器工具栏右侧加入：
@@ -12,6 +14,20 @@
 **地址栏增强**：在自带浏览器地址栏输入**非网址的关键词**（如「你好」）回车 → 用所选引擎搜索；输入真网址 / 域名则照常打开。
 
 所有数据保存在本插件目录的 `data/store.json`，本地保存、不联网、不上传。
+
+## 效果图
+
+内置浏览器顶部工具栏右侧：搜索框、搜索按钮、搜索引擎下拉、书签按钮（红点提示收藏状态）。
+
+![浏览器书签总览](https://raw.githubusercontent.com/loyalchiiina/dsh-browser-hub/main/docs/screenshots/01-browser-bookmarks-overview.png)
+
+![书签多级文件夹与搜索](https://raw.githubusercontent.com/loyalchiiina/dsh-browser-hub/main/docs/screenshots/02-bookmark-folders.png)
+
+在地址栏输入非网址的关键词（如 `NIHAO`）回车 → 用所选引擎搜索并直接在当前标签打开：
+
+![地址栏关键词搜索](https://raw.githubusercontent.com/loyalchiiina/dsh-browser-hub/main/docs/screenshots/03-address-bar-search.png)
+
+![搜索引擎下拉菜单](https://raw.githubusercontent.com/loyalchiiina/dsh-browser-hub/main/docs/screenshots/04-search-engine-menu.png)
 
 ## 安装（桌面端 desktop profile）
 
@@ -37,6 +53,8 @@
 
 ## 版本
 
+- 0.2.3 新增 `screenshots.json` 与 4 张效果图（`docs/screenshots/`），插件市场卡片与详情页可显示配图；README 补英文段与效果图区；`files` 白名单纳入 `docs` 与 `screenshots.json`，npm 包同步携带配图。
+- 0.2.2 新增 locale 元数据（市场显示名/描述）。
 - 0.2.1 修复删除 ✕ 无效（删除/新增/移动改用树根解包，传整库对象也能操作）；新增「收起全部 / 展开全部」一键折叠；脱敏后发布。
 - 0.2.0 移除独立「书签」Tab 与侧栏入口；改为纯内置浏览器增强（工具栏注入 + 地址栏搜索 + 面板内管理/导入）。
 - 0.1.0 首版：搜索引擎 + 书签收藏 + 多级文件夹（拖拽）+ 导入书签 HTML。
