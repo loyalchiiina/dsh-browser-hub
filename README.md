@@ -29,6 +29,28 @@
 
 ![搜索引擎下拉菜单](https://raw.githubusercontent.com/loyalchiiina/dsh-browser-hub/main/docs/screenshots/04-search-engine-menu.png)
 
+## 快速上手（5 步）
+
+1. **打开**：装好并重启 DSH 后，点右侧边栏里自带的「浏览器」Tab —— 插件增强的就是这个 Tab，不会多出新标签页。
+2. **收藏**：点工具栏 **🔖** 打开书签面板 → 「＋书签」填名称与网址；「＋文件夹」建多级目录，面板里可移动 / 编辑 / 删除。
+3. **搜索**：在地址栏输入**非网址的关键词**回车 → 用下拉所选的搜索引擎在当前标签打开；输入真网址或域名则照常打开。
+4. **换引擎**：工具栏下拉选 百度 / Bing / Google / 搜狗 / 360；要别的选「自定义」，在旁边的输入框里写模板，`{q}` 就是关键词占位（例：`https://example.com/search?q={q}`）。
+5. **迁移与更新**：已有收藏点「导入书签」→ 粘贴 360 / Chrome / Edge 导出的书签 HTML 内容即可整批进来；点 **⟳** 检查更新（见下节），有新版装完需彻底退出 DSH 再启动。
+
+## 版本提醒（⟳ 检查更新）
+
+工具栏（＋书签 / ＋文件夹 / 导入书签）后面有一枚 **⟳**，点一下即查 npm 上本插件的最新版本：
+
+| 状态 | 表现 |
+|---|---|
+| 检查中 | 按钮变 ⏳，悬浮提示「检查中…」 |
+| 有新版本 | 按钮变色，悬浮提示「有新版本 vX（当前 vY），点一下更新」，面板底部同步提示 |
+| 已是最新 | 恢复默认外观，绿字提示「已是最新 vX」 |
+| 检查失败 | 红字提示失败原因（`HTTP 404` 会显示「接口不可用（宿主未重启？）」） |
+
+- 处于「有新版本」时**再点一下** → 一键装进当前 desktop profile → 成功后提示「已更新到 vX，**请彻底退出 DSH 重启**」。必须彻底退出客户端再启动：宿主端文件不会热重载，`Ctrl+Shift+R` 只重载客户端。
+- 本按钮复用技能浏览器的全局更新委托 `window.__dshUpdClick`，因此四态提示与红点规则和其它插件完全一致；本插件只贡献自己的按钮与包名（`data-dsh-upd="dsh-browser-hub"`）。
+
 ## 安装（桌面端 desktop profile）
 
 > 桌面 profile 由 Electron 独占管理，只能用「手改 package.json + pnpm install」的方式装。
@@ -37,7 +59,7 @@
 2. 编辑 `~/.dsh/profiles/desktop/package.json`：
    - `dependencies` 增加：
      ```json
-     "dsh-browser-hub": "link:C:/Users/<你>/.dsh/local-plugins/dsh-browser-hub"
+     "dsh-browser-hub": "0.2.8"
      ```
    - `dsh.profile.bundles` 数组增加 `"dsh-browser-hub"`。
 3. 在 `~/.dsh/profiles/desktop` 目录执行 `pnpm install`。
@@ -53,6 +75,10 @@
 
 ## 版本
 
+- 0.2.7 工具栏（＋书签 / ＋文件夹 / 导入书签）后面新增 **⟳ 检查更新**：点一下查 npm 最新版，有新版变蓝显示「更新到 vX」，再点一下即一键装进 desktop profile；复用技能浏览器的全局更新委托 `window.__dshUpdClick`。纯客户端改动，**Ctrl+Shift+R** 硬刷新生效。
+- 0.2.6 修复「启动正常但侧边栏功能失效」：上一版用 setInterval 轮询后重入 apply，而 apply 已在 fiber 激活完成后才调用，注册被**静默吞掉**；现改用 cordis 官方响应式注入 `ctx.inject(["betterSidebar"], cb)`，服务就绪时自行执行注册。
+- 0.2.5 启动稳定性：服务从 declared inject 移除（避免 pending 卡住 web boot），改为安全取值器 `__safeSvc` + 最多 30s 轮询。
+- 0.2.4 框架缓存修复：betterSidebar 改为**软等待**（最多 30s），不再因服务晚就绪而卡住 web boot。
 - 0.2.3 新增 `screenshots.json` 与 4 张效果图（`docs/screenshots/`），插件市场卡片与详情页可显示配图；README 补英文段与效果图区；`files` 白名单纳入 `docs` 与 `screenshots.json`，npm 包同步携带配图。
 - 0.2.2 新增 locale 元数据（市场显示名/描述）。
 - 0.2.1 修复删除 ✕ 无效（删除/新增/移动改用树根解包，传整库对象也能操作）；新增「收起全部 / 展开全部」一键折叠；脱敏后发布。
