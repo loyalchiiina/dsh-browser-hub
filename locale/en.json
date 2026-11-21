@@ -2,6 +2,6 @@
   "name": "dsh-browser-hub",
   "meta": {
     "title": "Browser Hub",
-    "description": "v0.2.2 · Adds search-engine switching, multi-level bookmark folders and 360/Chrome bookmark HTML import to the built-in Browser tab."
+    "description": "v0.2.10 · Adds search-engine switching, multi-level bookmark folders, browsing history and 360/Chrome bookmark HTML import to the built-in Browser tab."
   }
 }

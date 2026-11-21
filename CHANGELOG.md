@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.2.10 (2026-11-21) — 真正修掉「面板收不回去」+ 加确定关闭出口
+
+### 根因（0.2.9 只修了其中一条路径）
+`openPopover` 是异步的（要先 `await tbLoad()`）。快速连点 🔖 时，两下点击都在 await 之前看到 `TB.popover === null`，于是**各建一个面板**；只有后完成的那个能存进 `TB.popover`，先建的那个**失去引用的孤儿会永久固定在屏幕上**。点 🔖 只关掉可追踪的那个，剩下的仍挂在那里 —— 用户看到的就是「怎么都收不回去」。宿主重建工具栏时同理也会叠。
+
+### 修复
+- **互斥锁**：`TB.opening` 标志，异步打开期间再点直接忽略；`openPopover` 开头先 `closePopover()` 清场。
+- **孤儿清道夫** `purgeOrphanPopovers()`：扫掉所有不等于 `TB.popover` 的 `.dbh-pop`，在 `togglePopover`、`openPopover`、每次 `scanToolbars()`（约 150ms 一次）都执行，历史遗留的孤儿也会被自动回收。
+- **工具栏幂等判定改准**：原来只看 `data-dshbh="1"`，React 若只清掉我们的子节点而保留 toolbar，属性还在按钮却没了；改为「属性 + `.dbh-tb-group` 真实存在」双判，并清理重复注入的旧组，不再出现两个 🔖。
+- **mousedown 监听改同步挂载**（原来在 `setTimeout` 里，快速连点会漏掉关闭时机）。
+- **两个确定的关闭出口**：页签行右侧新增 ✕（`margin-left:auto` 右对齐），以及面板内 **Esc** 关闭。
+- **点网页区域也能关**：webview 的鼠标事件落在 guest 内不冒泡到 document，改监听 webview 的 `focus` 事件顺手关面板。
+
+### 文档更正（发布前一致性审计发现）
+0.2.7/0.2.8 宣称的 **⟳ 检查更新** 只实现在**未注册的旧 `HubTab` 组件**里，活动工具栏 `decorateToolbar` 从未渲染它 —— 用户按文档找不到按钮。同批还发现三项同类失真：「面板内可移动」（`moveNode` 仅死代码调用）、「🔖 红点提示收藏状态」（全文无 dot/badge 逻辑）、「粘贴 HTML 内容即可导入」（活动 UI 只有 `<input type="file">`）。本次一并从 README 删除，按实际保留（重命名 / 删除 / 选择 .html 文件导入）；`locale` 与 `package.json` description 补上「浏览历史」，`locale` 版本前缀由 `v0.2.2` 改为 `v0.2.10`，安装示例由 `0.2.8` 改为 `0.2.10`。⟳ 四态更新提醒待 0.2.11 搬到工具栏并自建检查。
+
+客户端改动 → **Ctrl+Shift+R** 硬刷新即可，本次**不需要重启 DSH**（宿主端 `lib/index.js` 仅版本号变化）。
+
+## 0.2.9 (2026-11-21) — 修复「面板收不起来」+ 新增浏览历史
+
+### 修复：点 🔖 关不掉面板（收缩不回去）
+- 根因：`onDocDown` 用**对象引用**比较 `e.target !== TB.popoverBtn`。宿主 React 重建工具栏后，新按钮节点已不是记录的旧节点，于是 mousedown 先 `closePopover()`，紧接同一按钮的 `click` 又 `togglePopover()` 见面板为空立刻重开 —— 表现为「刚关掉又弹回来，怎么都收不起来」。
+- 改为按语义判定：新增 `isHubControl(el)`，用 `el.closest(".dbh-tb-btn, .dbh-tb-group")` 识别全部插件控件，命中即不关面板。
+- 加自愈：`decorateToolbar` 与 `togglePopover` 检测到 `TB.popover`/`TB.popoverBtn` 已脱离文档就先清空引用，避免孤儿引用把状态锁死。
+- 按钮量不到尺寸（宽高皆 0）时退回用工具栏 rect 定位，防止面板飘到左上角。
+
+### 新增：浏览历史（书签 / 历史 胶囊页签同页切换）
+- 面板顶部新增「书签 / 历史」两个胶囊页签，同页切换，不跳转、不滚动。
+- 历史自动记录：监听侧边栏浏览器所有 `webview` 的 `did-navigate`、`did-navigate-in-page`、`did-finish-load`、`page-title-updated`，落盘到插件 `data/history.json`（上限 800 条，同 URL 去重提前）。
+- 历史页：搜索框按标题/网址过滤、显示「共 N 条」、每条显示 `域名 · 相对时间`（刚刚 / n 分钟前 / n 小时前 / n 天前 / M月D日），点击直接用浏览器打开，右侧 ✕ 删单条，底部「清空历史」需二次点击确认。
+- 搜索框提示语随页签切换；历史页隐藏书签专用按钮组（展开全部 / 收藏 / ＋书签 / ＋文件夹 / 导入）。
+
+### 说明：网页登录态（cookie）为什么还没法靠插件保住
+数据库根因在宿主，不在本插件：宿主主进程 `/lib/browser-guests-D7lKsFoG.js` 的 `DesktopBrowserGuests.acquire()` 生成的分区名是 `dsh-sidebar-browser-${randomUUID()}`，**没有 `persist:` 前缀**，Electron 按内存 session 处理，DSH 一退出 cookie 即销毁；且 `will-attach-webview` 强校验 `params.partition !== lease.partition` 就 `preventDefault()`，插件无法替换分区。要让 bilibili 等免重登，只能改宿主（把分区改成稳定的 `persist:` 名）——这属于改 DSH 本体，需单独评估。
+
 ## 0.2.8 (2026-11-13) — 文档补全：快速上手 + 版本提醒
 
 ### 文档补全（功能一致性审计）
