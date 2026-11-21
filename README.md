@@ -40,9 +40,16 @@
 4. **换引擎**：工具栏下拉选 百度 / Bing / Google / 搜狗 / 360；要别的选「自定义」，在旁边的输入框里写模板，`{q}` 就是关键词占位（例：`https://example.com/search?q={q}`）。
 5. **迁移**：已有收藏点「导入书签」→ 选择 360 / Chrome / Edge 导出的书签 `.html` 文件即可整批进来。
 
-## 关于自动更新提醒
+## 自动更新提醒（工具栏 ⟳）
 
-本插件**当前没有**工具栏「检查更新」按钮：相关实现残留在未注册的旧 Tab 组件里，活动工具栏从未渲染过它，因此不在此宣称（计划在 0.2.11 搬到工具栏并自建四态检查）。在那之前请用宿主插件市场的更新提示，或手动装新版后**彻底退出 DSH 再启动**。
+工具栏上有一个 **⟳** 独立图标按钮（与引擎下拉、🔖 同组同形）。启动 3 秒后自动查一次 npm 上的最新版，之后打开面板时若距上次检查超过 6 小时会再补查一次（不轮询）。
+
+- **检查中**：图标旋转、半透明
+- **有新版本**：图标变 **↓**、蓝底高亮、**右上角红点**，tooltip 写「有新版本 vX.Y.Z，点击安装（装完需彻底退出 DSH 再启动）」
+- **已是最新**：绿点，2 秒后自动淡出，tooltip 写「已是最新（vX.Y.Z）」
+- **检查失败**：红字，tooltip 写明原因（如「连接 npm registry 超时（8 秒）」），点一下即重试
+
+点「有新版本」时优先调用技能浏览器的全局更新委托 `window.__dshUpdClick`，一键装进 desktop profile；宿主没装它时退化为底部轻提示，并明确提示「装完必须彻底退出 DSH 客户端再重新启动才会生效」。查询由插件宿主端 `GET /browser-hub/check-update` 发起（8 秒超时、结果缓存 6 小时、`?force=1` 强刷），客户端不直连外网。
 
 ## 安装（桌面端 desktop profile）
 
@@ -52,7 +59,7 @@
 2. 编辑 `~/.dsh/profiles/desktop/package.json`：
    - `dependencies` 增加：
      ```json
-     "dsh-browser-hub": "0.2.10"
+     "dsh-browser-hub": "0.2.11"
      ```
    - `dsh.profile.bundles` 数组增加 `"dsh-browser-hub"`。
 3. 在 `~/.dsh/profiles/desktop` 目录执行 `pnpm install`。
@@ -68,10 +75,11 @@
 
 ## 版本
 
+- 0.2.11 把 **⟳ 自动更新提醒** 真正做到工具栏：独立图标按钮（与引擎下拉、🔖 同组同形），启动 3 秒自动查一次、开面板时超 6 小时补查（不轮询）。状态齐全：检查中旋转半透明 / 有新版本变 `↓` + 蓝底 + **右上角红点** + 「有新版本 vX 点击安装」 / 已最新绿点 2 秒淡出 / 失败红字带原因可重试。点「有新版本」优先委托 `window.__dshUpdClick`，缺它则降级轻提示并写明「装完必须彻底退出 DSH 再启动」。宿主端新增 `GET /browser-hub/check-update`（8 秒超时、6 小时缓存、`?force=1` 强刷；网络不通明确回 `ok:false`，不静默当成已最新）。**含宿主端改动 → 需彻底退出 DSH 再启动**；只硬刷新会显示「检查更新失败：HTTP 404」（旧宿主进程还没有这条路由）。
 - 0.2.10 真正修掉「面板收不回去」：`openPopover` 是异步的（先 `await tbLoad()`），快速连点 🔖 会各建一个面板，只有后完成的能被 `TB.popover` 追踪，**先建的孤儿永久挂在屏幕上**，点按钮只关掉一个、剩下的怎么都收不起来。加 `TB.opening` 互斥 + `purgeOrphanPopovers()` 孤儿清道夫（`togglePopover`/`openPopover`/每次 `scanToolbars` 都清）。工具栏幂等改为「属性 + `.dbh-tb-group` 真实存在」双判并清理重复组；mousedown 监听改同步挂载；页签行右侧加 **✕**、面板内支持 **Esc** 关闭；点网页区域靠 webview `focus` 事件关闭。纯客户端 → **Ctrl+Shift+R**，不需重启。**同版文档更正**：删除 README 中四项从未在活动 UI 生效的描述（⟳ 检查更新、面板内移动、🔖 红点、粘贴 HTML 导入）；`locale` 元数据与 `package.json` description 补上「浏览历史」，安装示例版本更新为 0.2.10。
 - 0.2.9 修复「点 🔖 关不掉面板」：`onDocDown` 原来用对象引用比 `e.target !== TB.popoverBtn`，React 重建工具栏后新节点不等于旧引用 → mousedown 先关、同一按钮的 click 又开；改为 `isHubControl()` 按 `.dbh-tb-btn/.dbh-tb-group` 语义判定，并给 `decorateToolbar`/`togglePopover` 加孤儿引用自愈。新增**浏览历史**（书签/历史胶囊页签同页切换，落盘 `data/history.json`，上限 800 条，可搜索、删单条、二次确认清空）。**改动含宿主端 `lib/index.js` → 需彻底退出 DSH 再启动；客户端部分再按 Ctrl+Shift+R。**
 - 0.2.8 文档补全：新增「快速上手（5 步）」与「版本提醒（⟳ 检查更新）」四态说明；安装段去掉 `link:` 教法，改为真实副本 + `dsh.profile.bundles`。
-  > **注（0.2.10 核实）**：⟳ 仅在未注册的旧 `HubTab` 组件里实现，活动工具栏（`decorateToolbar`）从未渲染过它，`window.__dshUpdClick` 亦未在任何活路径被调用 —— 故 0.2.7/0.2.8 这两条描述的函数**从未生效**，0.2.10 已从功能说明与快速上手移除，待 0.2.11 搬到工具栏并自建四态检查。
+  > **注（0.2.10 核实）**：⟳ 仅在未注册的旧 `HubTab` 组件里实现，活动工具栏（`decorateToolbar`）从未渲染过它，`window.__dshUpdClick` 亦未在任何活路径被调用 —— 故 0.2.7/0.2.8 这两条描述的函数**从未生效**，0.2.10 已从功能说明与快速上手移除；0.2.11 已把 ⟳ 四态真正做进活动工具栏（见上）。
 - 0.2.7 工具栏（＋书签 / ＋文件夹 / 导入书签）后面新增 **⟳ 检查更新**：点一下查 npm 最新版，有新版变蓝显示「更新到 vX」，再点一下即一键装进 desktop profile；复用技能浏览器的全局更新委托 `window.__dshUpdClick`。纯客户端改动，**Ctrl+Shift+R** 硬刷新生效。
 - 0.2.6 修复「启动正常但侧边栏功能失效」：上一版用 setInterval 轮询后重入 apply，而 apply 已在 fiber 激活完成后才调用，注册被**静默吞掉**；现改用 cordis 官方响应式注入 `ctx.inject(["betterSidebar"], cb)`，服务就绪时自行执行注册。
 - 0.2.5 启动稳定性：服务从 declared inject 移除（避免 pending 卡住 web boot），改为安全取值器 `__safeSvc` + 最多 30s 轮询。
