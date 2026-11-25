@@ -2,6 +2,8 @@
 
 内置「浏览器」Tab 增强 —— the agent harness 桌面端右侧边栏**自带浏览器**的伴随插件。
 
+> **兼容性（0.2.12 起）**：`dsh-better-sidebar` 是**可选增强**，不是安装/运行前提。官方版（`.dsh-official`）与 NEXT（`.dsh` 的 desktop profile）都能正常安装使用；装了 `dsh-better-sidebar` 时仍会在其就绪后做响应式注入，没装时工具栏与书签/历史立即生效。
+
 > **English**: A companion plugin for the built-in **browser** tab in the desktop right sidebar: adds a search-engine dropdown (Baidu / Bing / Google / Sogou / 360 / custom), a bookmark button with a searchable panel, multi-level folders and 360/Chrome bookmark-HTML import, plus keyword-to-search behaviour in the address bar. Adapts DSH kernel 0.2.2-rc.1.
 
 > 只增强**自带的「浏览器」Tab**，**不再单独新增标签页**（独立的「书签」Tab 与左侧边栏入口已移除）。
@@ -11,6 +13,7 @@
 - 🔎 **搜索引擎下拉**：百度 / Bing / Google / 搜狗 / 360 搜索 / 自定义（`{q}` 占位）
 - 🔖 **书签按钮**：点开面板可实时搜索书签、点开、＋收藏当前页、＋书签、＋文件夹、导入、编辑 / 删除
 - 🕘 **浏览历史**：面板顶部「书签 / 历史」胶囊页签同页切换；历史自动记录浏览器里打开过的网页，按标题/网址搜索，点开直接回到那一页，可删单条或「清空历史」（二次确认）
+- ⭐ **GitHub Star**：书签面板底部金色星形按钮（GitHub octicon SVG），点击在宿主浏览器新开 `https://github.com/loyalchiiina/dsh-browser-hub` 给插件点 Star。
 
 **地址栏增强**：在自带浏览器地址栏输入**非网址的关键词**（如「你好」）回车 → 用所选引擎搜索；输入真网址 / 域名则照常打开。
 
@@ -59,7 +62,7 @@
 2. 编辑 `~/.dsh/profiles/desktop/package.json`：
    - `dependencies` 增加：
      ```json
-     "dsh-browser-hub": "0.2.11"
+     "dsh-browser-hub": "0.2.14"
      ```
    - `dsh.profile.bundles` 数组增加 `"dsh-browser-hub"`。
 3. 在 `~/.dsh/profiles/desktop` 目录执行 `pnpm install`。
@@ -75,6 +78,9 @@
 
 ## 版本
 
+- 0.2.14 书签面板底部的 ★ 改为 **GitHub Star 按钮**：金色 octicon 星形 SVG，点击在宿主浏览器新开仓库 `https://github.com/loyalchiiina/dsh-browser-hub`（不再误当「收藏当前网页」，地址栏为空时也能用）。纯客户端改动，**Ctrl+Shift+R** 硬刷新生效；同步把宿主 `lib/index.js` 的 `VERSION` 升到 0.2.14，避免更新提醒误报（**含宿主端改动 → 需彻底退出 DSH 再启动**）。
+- 0.2.13 书签面板底部新增金色 ★ 星标按钮：点击把当前网页加入书签，成功后短暂显示 ✓，与「收藏」共用同一段逻辑、不产生重复条目（0.2.14 已改为 GitHub Star）。
+- 0.2.12 **双端兼容**：`dsh-better-sidebar` 改为可选增强，移除 `peerDependencies` 硬声明；宿主未提供该服务时立即激活内置浏览器工具栏（搜索引擎下拉、书签面板、历史、导入、更新提醒），官方版与 NEXT 端均可安装使用。
 - 0.2.11 把 **⟳ 自动更新提醒** 真正做到工具栏：独立图标按钮（与引擎下拉、🔖 同组同形），启动 3 秒自动查一次、开面板时超 6 小时补查（不轮询）。状态齐全：检查中旋转半透明 / 有新版本变 `↓` + 蓝底 + **右上角红点** + 「有新版本 vX 点击安装」 / 已最新绿点 2 秒淡出 / 失败红字带原因可重试。点「有新版本」优先委托 `window.__dshUpdClick`，缺它则降级轻提示并写明「装完必须彻底退出 DSH 再启动」。宿主端新增 `GET /browser-hub/check-update`（8 秒超时、6 小时缓存、`?force=1` 强刷；网络不通明确回 `ok:false`，不静默当成已最新）。**含宿主端改动 → 需彻底退出 DSH 再启动**；只硬刷新会显示「检查更新失败：HTTP 404」（旧宿主进程还没有这条路由）。
 - 0.2.10 真正修掉「面板收不回去」：`openPopover` 是异步的（先 `await tbLoad()`），快速连点 🔖 会各建一个面板，只有后完成的能被 `TB.popover` 追踪，**先建的孤儿永久挂在屏幕上**，点按钮只关掉一个、剩下的怎么都收不起来。加 `TB.opening` 互斥 + `purgeOrphanPopovers()` 孤儿清道夫（`togglePopover`/`openPopover`/每次 `scanToolbars` 都清）。工具栏幂等改为「属性 + `.dbh-tb-group` 真实存在」双判并清理重复组；mousedown 监听改同步挂载；页签行右侧加 **✕**、面板内支持 **Esc** 关闭；点网页区域靠 webview `focus` 事件关闭。纯客户端 → **Ctrl+Shift+R**，不需重启。**同版文档更正**：删除 README 中四项从未在活动 UI 生效的描述（⟳ 检查更新、面板内移动、🔖 红点、粘贴 HTML 导入）；`locale` 元数据与 `package.json` description 补上「浏览历史」，安装示例版本更新为 0.2.10。
 - 0.2.9 修复「点 🔖 关不掉面板」：`onDocDown` 原来用对象引用比 `e.target !== TB.popoverBtn`，React 重建工具栏后新节点不等于旧引用 → mousedown 先关、同一按钮的 click 又开；改为 `isHubControl()` 按 `.dbh-tb-btn/.dbh-tb-group` 语义判定，并给 `decorateToolbar`/`togglePopover` 加孤儿引用自愈。新增**浏览历史**（书签/历史胶囊页签同页切换，落盘 `data/history.json`，上限 800 条，可搜索、删单条、二次确认清空）。**改动含宿主端 `lib/index.js` → 需彻底退出 DSH 再启动；客户端部分再按 Ctrl+Shift+R。**

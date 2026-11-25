@@ -1,7 +1,7 @@
 {
   "name": "dsh-browser-hub",
-  "version": "0.2.11",
-  "description": "侧边栏浏览器搜索引擎以及书签、历史功能补丁插件（dsh-browser-hub）：给 DSH 自带「浏览器」Tab 增加搜索引擎选择、书签收藏、多级文件夹、浏览历史与导入 360/Chrome 书签 HTML。",
+  "version": "0.2.14",
+  "description": "侧边栏浏览器搜索引擎以及书签、历史功能补丁插件（dsh-browser-hub）：给 DSH 自带「浏览器」Tab 增加搜索引擎选择、书签收藏、多级文件夹、浏览历史与导入 360/Chrome 书签 HTML。dsh-better-sidebar 为可选增强，不安装也可正常使用。",
   "type": "module",
   "main": "./lib/index.js",
   "exports": {
@@ -43,9 +43,6 @@
       "platform": "web"
     },
     "manifestVersion": 1
-  },
-  "peerDependencies": {
-    "dsh-better-sidebar": ">=0.20.0"
   },
   "engines": {
     "node": ">=20"
