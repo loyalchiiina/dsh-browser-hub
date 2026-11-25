@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.15 (2026-11-25) — 书签/历史改存用户级固定目录，卸载重装不再丢
+
+### 修复
+- 宿主端 `lib/index.js` 不再把 `store.json` / `history.json` 放在插件包内 `data/`，改到 `$DSH_HOME/browser-hub-data/`（官方端 = `~/.dsh-official/browser-hub-data`，社区版/NEXT = `~/.dsh/browser-hub-data`）。
+- 首次加载自动把旧包内 `data/store.json`、`data/history.json` 复制到新目录；目标已存在时不覆盖，保护较新的数据。
+- 种子文件 `defaults.json` 仍随包发布。
+
 ## 0.2.14 (2026-11-25) — ★ 改为 GitHub Star 按钮
 
 ### 修复

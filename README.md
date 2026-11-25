@@ -17,7 +17,7 @@
 
 **地址栏增强**：在自带浏览器地址栏输入**非网址的关键词**（如「你好」）回车 → 用所选引擎搜索；输入真网址 / 域名则照常打开。
 
-所有数据保存在本插件目录的 `data/`（书签 `store.json`、历史 `history.json`），本地保存、不联网、不上传。
+所有数据（书签 `store.json`、历史 `history.json`）自 0.2.15 起保存在 **`$DSH_HOME/browser-hub-data/`**（官方端 `~/.dsh-official/browser-hub-data`，NEXT `~/.dsh/browser-hub-data`），不再随插件卸载/重装丢失；旧 `data/` 里的数据首次启动自动迁移。本地保存、不联网、不上传。
 
 > 关于网页登录态（cookie）：宿主给侧边栏浏览器分配的是**内存态隔离分区**（`dsh-sidebar-browser-<uuid>`，无 `persist:` 前缀），DSH 一退出 cookie 即清空，插件层无法改变，所以 bilibili 等站点每次重启仍需重新登录。要免重登必须改 DSH 本体。
 
@@ -62,7 +62,7 @@
 2. 编辑 `~/.dsh/profiles/desktop/package.json`：
    - `dependencies` 增加：
      ```json
-     "dsh-browser-hub": "0.2.14"
+     "dsh-browser-hub": "0.2.15"
      ```
    - `dsh.profile.bundles` 数组增加 `"dsh-browser-hub"`。
 3. 在 `~/.dsh/profiles/desktop` 目录执行 `pnpm install`。
@@ -78,6 +78,7 @@
 
 ## 版本
 
+- 0.2.15 **数据不再随卸载/重装丢失**：书签 `store.json` 与历史 `history.json` 从插件包内 `data/` 迁到用户级固定目录 `$DSH_HOME/browser-hub-data/`（官方端 `~/.dsh-official/browser-hub-data`，NEXT `~/.dsh/browser-hub-data`），卸载、重装、`pnpm update` 都不再冲掉数据；首次启动自动把旧 `data/` 数据复制过去（目标已存在时不覆盖，保护较新的数据）。种子 `defaults.json` 仍随包发布，用户数据不进包。**含宿主端 `lib/index.js` 改动 → 需彻底退出 DSH 再启动**。
 - 0.2.14 书签面板底部的 ★ 改为 **GitHub Star 按钮**：金色 octicon 星形 SVG，点击在宿主浏览器新开仓库 `https://github.com/loyalchiiina/dsh-browser-hub`（不再误当「收藏当前网页」，地址栏为空时也能用）。纯客户端改动，**Ctrl+Shift+R** 硬刷新生效；同步把宿主 `lib/index.js` 的 `VERSION` 升到 0.2.14，避免更新提醒误报（**含宿主端改动 → 需彻底退出 DSH 再启动**）。
 - 0.2.13 书签面板底部新增金色 ★ 星标按钮：点击把当前网页加入书签，成功后短暂显示 ✓，与「收藏」共用同一段逻辑、不产生重复条目（0.2.14 已改为 GitHub Star）。
 - 0.2.12 **双端兼容**：`dsh-better-sidebar` 改为可选增强，移除 `peerDependencies` 硬声明；宿主未提供该服务时立即激活内置浏览器工具栏（搜索引擎下拉、书签面板、历史、导入、更新提醒），官方版与 NEXT 端均可安装使用。
