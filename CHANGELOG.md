@@ -1,3 +1,11 @@
+## 0.2.16 — 2026-11-26
+
+性能：历史记录器去掉双触发
+
+- 原「documentElement 整棵 subtree 的 MutationObserver」+「2500ms setInterval(scan)」双触发，每次回调都全文档 `querySelectorAll("webview")`。
+- MO 回调改为只置脏标记，合并成「每 16ms 最多扫一次」；兜底轮询 2500ms → 15000ms；兜底轮询 `document.hidden` 时跳过。
+- 版本号顺带对齐：package.json 之前是 0.2.15 而实装目录停在 0.2.14，本次统一到 0.2.16。
+
 # Changelog
 
 ## 0.2.15 (2026-11-25) — 书签/历史改存用户级固定目录，卸载重装不再丢
